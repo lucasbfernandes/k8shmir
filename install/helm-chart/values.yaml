@@ -1,7 +1,7 @@
 proxy:
-  name: req-smr
+  name: k8s-smr
   port: 8080
-  image: lucasbfernandes/req-smr:v0.1.0
+  image: lucasbfernandes/k8s-smr:v0.1.0
 
 proxySetup:
   name: proxy-setup

@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: req-smr
+  name: k8s-smr
   labels:
-    app: req-smr
+    app: k8s-smr
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: req-smr
+      app: k8s-smr
   template:
     metadata:
       labels:
-        app: req-smr
+        app: k8s-smr
     spec:
       initContainers:
         - name: {{ .Values.proxySetup.name }}

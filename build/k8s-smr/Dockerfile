@@ -1,18 +1,18 @@
-FROM golang:1.14-alpine
+FROM golang:1.16-alpine
 
 RUN apk add --no-cache git
 
-WORKDIR /app/req-smr
+WORKDIR /app/k8s-smr
 
 COPY ./go.mod .
 COPY ./go.sum .
 
 RUN go mod download
 
-COPY . .
+COPY ../../cmd/k8s-smr .
 
-RUN go build -o ./out/req-smr cmd/req-smr/*.go
+RUN go build -o ./out/k8s-smr cmd/k8s-smr/*.go
 
 EXPOSE 8080
 
-ENTRYPOINT ["./out/req-smr"]
+ENTRYPOINT ["./out/k8s-smr"]

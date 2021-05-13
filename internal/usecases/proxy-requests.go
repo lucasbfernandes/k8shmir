@@ -122,7 +122,7 @@ func writeResponse(responseWriter http.ResponseWriter, res *http.Response) {
 	for name, values := range res.Header {
 		responseWriter.Header()[name] = values
 	}
-	responseWriter.Header().Set("Server", "req-smr")
+	responseWriter.Header().Set("Server", "k8s-smr")
 	responseWriter.WriteHeader(res.StatusCode)
 	io.Copy(responseWriter, res.Body)
 	res.Body.Close()

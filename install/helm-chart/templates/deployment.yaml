@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: req-smr
+  labels:
+    app: req-smr
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: req-smr
+  template:
+    metadata:
+      labels:
+        app: req-smr
+    spec:
+      initContainers:
+        - name: {{ .Values.proxySetup.name }}
+          image: {{ .Values.proxySetup.image }}
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+            privileged: true
+      containers:
+        - name: {{ .Values.service.name }}
+          image: {{ .Values.service.image }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+        - name: {{ .Values.proxy.name }}
+          image: {{ .Values.proxy.image }}
+          ports:
+            - containerPort: {{ .Values.proxy.port }}
+          env:
+            - name: PROXY_PORT
+              value: {{ .Values.proxy.port | quote }}
+            - name: SERVICE_PORT
+              value: {{ .Values.service.port | quote }}

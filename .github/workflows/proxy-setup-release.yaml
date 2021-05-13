@@ -1,0 +1,28 @@
+name: proxy-setup-release
+
+on:
+  push:
+    branches: [ release-* ]
+
+jobs:
+  build_and_push_prerelease:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | awk -F 'release-'  '{print $2}')
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v1.0.1
+        with:
+          path: ./proxy/cmd/proxy-setup/
+          username: ${{secrets.DOCKER_REGISTRY_USERNAME}}
+          password: ${{secrets.DOCKER_REGISTRY_PASSWORD}}
+          repository: lucasbfernandes/proxy-setup
+          dockerfile: ./proxy/cmd/proxy-setup/Dockerfile
+          tags: ${{steps.get_version.outputs.VERSION}}
+          tag_with_ref: false
+          tag_with_sha: false

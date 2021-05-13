@@ -1,0 +1,13 @@
+proxy:
+  name: req-smr
+  port: 8080
+  image: lucasbfernandes/req-smr:v0.1.0
+
+proxySetup:
+  name: proxy-setup
+  image: lucasbfernandes/proxy-setup:v0.1.0
+
+service:
+  name: nodejs-app
+  port: 3000
+  image: lucasbfernandes/nodejs-app:v0.1.0

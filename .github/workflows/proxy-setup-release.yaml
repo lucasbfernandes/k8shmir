@@ -1,4 +1,4 @@
-name: server-setup-release
+name: proxy-setup-release
 
 on:
   push:
@@ -18,10 +18,10 @@ jobs:
       - name: Build and push Docker images
         uses: docker/build-push-action@v1.0.1
         with:
-          path: ./build/proxy-setup/
+          path: .
           username: ${{secrets.DOCKER_REGISTRY_USERNAME}}
           password: ${{secrets.DOCKER_REGISTRY_PASSWORD}}
-          repository: lucasbfernandes/server-setup
+          repository: lucasbfernandes/proxy-setup
           dockerfile: ./build/proxy-setup/Dockerfile
           tags: ${{steps.get_version.outputs.VERSION}}
           tag_with_ref: false

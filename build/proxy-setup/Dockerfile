@@ -6,7 +6,7 @@ RUN apt-get update && \
     apt-get install -y iptables
 
 # Copy the initialization script into the container.
-COPY init.sh /usr/local/bin/
+COPY build/proxy-setup/init.sh /usr/local/bin/
 
 # Mark the initialization script as executable.
 RUN chmod +x /usr/local/bin/init.sh

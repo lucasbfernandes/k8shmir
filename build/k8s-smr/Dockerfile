@@ -9,7 +9,7 @@ COPY ./go.sum .
 
 RUN go mod download
 
-COPY ../../cmd/k8s-smr .
+COPY cmd/k8s-smr .
 
 RUN go build -o ./out/k8s-smr cmd/k8s-smr/*.go
 

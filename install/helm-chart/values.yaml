@@ -4,8 +4,8 @@ proxy:
   image: lucasbfernandes/k8s-smr:v0.1.0
 
 proxySetup:
-  name: proxy-setup
-  image: lucasbfernandes/proxy-setup:v0.1.0
+  name: server-setup
+  image: lucasbfernandes/server-setup:v0.1.0
 
 service:
   name: nodejs-app

@@ -1,4 +1,4 @@
-module req-smr
+module k8s-smr
 
 go 1.16
 

@@ -1,11 +1,24 @@
 package main
 
 import (
-	"req-smr/internal/api"
-	"req-smr/internal/usecases"
+	"k8s-smr/internal/config"
+	"k8s-smr/internal/server"
+	"log"
+	"os"
 )
 
 func main() {
-	usecases.WatchRequests()
-	api.StartAPI()
+	port := config.GetProxyServerPort()
+
+	proxyServer, err := server.New(port)
+	if err != nil {
+		log.Printf("failed to create server: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	err = proxyServer.Start()
+	if err != nil {
+		log.Printf("failed to start server: %s\n", err.Error())
+		os.Exit(1)
+	}
 }

@@ -27,12 +27,12 @@ spec:
           image: {{ .Values.service.image }}
           ports:
             - containerPort: {{ .Values.service.port }}
-        - name: {{ .Values.proxy.name }}
-          image: {{ .Values.proxy.image }}
+        - name: {{ .Values.server.name }}
+          image: {{ .Values.server.image }}
           ports:
-            - containerPort: {{ .Values.proxy.port }}
+            - containerPort: {{ .Values.server.port }}
           env:
             - name: PROXY_PORT
-              value: {{ .Values.proxy.port | quote }}
+              value: {{ .Values.server.port | quote }}
             - name: SERVICE_PORT
               value: {{ .Values.service.port | quote }}

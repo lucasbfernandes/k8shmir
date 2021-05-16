@@ -28,11 +28,11 @@ jobs:
     - name: Build and push Docker images
       uses: docker/build-push-action@v1.0.1
       with:
-        path: .
+        path: ./build/k8s-smr/
         username: ${{secrets.DOCKER_REGISTRY_USERNAME}}
         password: ${{secrets.DOCKER_REGISTRY_PASSWORD}}
         repository: lucasbfernandes/k8s-smr
-        dockerfile: build/k8s-smr/Dockerfile
+        dockerfile: ./build/k8s-smr/Dockerfile
         tags: ${{steps.get_version.outputs.VERSION}}
         tag_with_ref: false
         tag_with_sha: false

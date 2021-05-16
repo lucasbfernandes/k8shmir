@@ -4,12 +4,7 @@ RUN apk add --no-cache git
 
 WORKDIR /app/k8s-smr
 
-COPY ./go.mod .
-COPY ./go.sum .
-
-RUN go mod download
-
-COPY cmd/k8s-smr .
+COPY . .
 
 RUN go build -o ./out/k8s-smr cmd/k8s-smr/*.go
 

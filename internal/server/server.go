@@ -66,6 +66,8 @@ func (s *Server) ServeHTTP(responseWriter http.ResponseWriter, httpRequest *http
 		return
 	}
 
+	log.Printf("forwarded request with application response: %+v\n", res)
+
 	err = s.writeResponse(responseWriter, res)
 	if err != nil {
 		log.Printf("failed to write response back to client: %s\n", err)

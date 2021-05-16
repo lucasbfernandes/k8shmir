@@ -34,5 +34,11 @@ spec:
           env:
             - name: PROXY_PORT
               value: {{ .Values.proxy.port | quote }}
+            - name: ATOMIX_DB_NAME
+              value: {{ .Values.proxy.atomixDbName | quote }}
+            - name: ATOMIX_CONTROLLER_ADDRESS
+              value: {{ .Values.proxy.atomixControllerAddress | quote }}
+            - name: ATOMIX_LOG_PRIMITIVE_NAME
+              value: {{ .Values.proxy.atomixLogPrimitiveName | quote }}
             - name: APPLICATION_PORT
               value: {{ .Values.counterApp.port | quote }}

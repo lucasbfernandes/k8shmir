@@ -1,0 +1,11 @@
+apiVersion: storage.cloud.atomix.io/v1beta1
+kind: RaftStorageClass
+metadata:
+  name: {{ template "raft-database.fullname" . }}
+  labels:
+    app: {{ template "raft-database.fullname" . }}
+spec:
+  image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+  imagePullPolicy: {{ .Values.image.pullPolicy }}
+  replicas: {{ .Values.replicas }}
+  partitionsPerCluster: {{ .Values.partitionsPerCluster }}

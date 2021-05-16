@@ -1,0 +1,15 @@
+apiVersion: v2
+name: raft-database
+description: Chart for configuring a Raft storage class and database
+kubeVersion: ">=1.17.0"
+type: application
+version: 0.4.0
+appVersion: v0.2.0
+keywords:
+  - atomix
+home: https://cloud.atomix.io
+maintainers:
+  - name: adib
+    email: adib@opennetworking.org
+  - name: kuujo
+    email: jordan@opennetworking.org

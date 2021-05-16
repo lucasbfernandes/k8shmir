@@ -1,0 +1,9 @@
+dependencies:
+- name: atomix-controller
+  repository: https://charts.atomix.io
+  version: 0.5.2
+- name: raft-storage-controller
+  repository: https://charts.atomix.io
+  version: 0.5.1
+digest: sha256:78f8f85eb7cd872c9f478e5443c85d08295639e36699c31adb7882a6dde30ec0
+generated: "2021-05-16T00:49:50.192633-03:00"

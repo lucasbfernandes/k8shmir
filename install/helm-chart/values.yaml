@@ -1,13 +1,4 @@
-proxy:
-  name: k8s-smr
-  port: 8080
-  image: lucasbfernandes/k8s-smr:v0.1.0
-
-proxySetup:
-  name: server-setup
-  image: lucasbfernandes/server-setup:v0.1.0
-
-service:
-  name: nodejs-app
-  port: 3000
-  image: lucasbfernandes/nodejs-app:v0.1.0
+raft-database:
+  partitions: 1
+  replicas: 3
+  partitionsPerCluster: 3

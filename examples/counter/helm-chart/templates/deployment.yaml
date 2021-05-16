@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: counter-app
+  labels:
+    app: counter-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: counter-app
+  template:
+    metadata:
+      labels:
+        app: counter-app
+    spec:
+      initContainers:
+        - name: {{ .Values.proxySetup.name }}
+          image: {{ .Values.proxySetup.image }}
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+            privileged: true
+      containers:
+        - name: {{ .Values.counterApp.name }}
+          image: {{ .Values.counterApp.image }}
+          ports:
+            - containerPort: {{ .Values.counterApp.port }}
+        - name: {{ .Values.proxy.name }}
+          image: {{ .Values.proxy.image }}
+          ports:
+            - containerPort: {{ .Values.proxy.port }}
+          env:
+            - name: PROXY_PORT
+              value: {{ .Values.proxy.port | quote }}
+            - name: APPLICATION_PORT
+              value: {{ .Values.counterApp.port | quote }}

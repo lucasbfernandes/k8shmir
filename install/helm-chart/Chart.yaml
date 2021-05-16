@@ -1,5 +1,16 @@
-apiVersion: v1
-appVersion: "1.0"
-description: k8s-smr
+apiVersion: v2
 name: k8s-smr
-version: '1.0'
+description: Chart for installing k8s-smr's required infrastructure
+type: application
+version: 0.1.0
+
+# TODO add raft-database as a dependency - Talk to maintainers
+dependencies:
+  - name: atomix-controller
+    version: 0.5.2
+    repository: https://charts.atomix.io
+  - name: raft-storage-controller
+    version: 0.5.1
+    repository: https://charts.atomix.io
+
+appVersion: 0.1.0

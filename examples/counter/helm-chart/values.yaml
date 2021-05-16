@@ -1,0 +1,13 @@
+proxy:
+  name: k8s-smr
+  port: 8080
+  image: lucasbfernandes/k8s-smr:v0.1.0
+
+proxySetup:
+  name: proxy-setup
+  image: lucasbfernandes/proxy-setup:v0.1.0
+
+counterApp:
+  name: nodejs-app
+  port: 3000
+  image: lucasbfernandes/nodejs-app:v0.1.0

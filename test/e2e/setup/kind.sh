@@ -32,8 +32,21 @@ create_kind_cluster() {
       --config $ROOT/test/e2e/setup/kind-config.yaml
 }
 
-run_helm_builder_container() {
-    echo 'Creating helm builder container'
+deploy_infrastructure() {
+    echo 'Setting up deployment container'
+    setup_deployment_container
+
+    echo 'Deploying helm applications'
+    deploy_ingress_controller
+    deploy_atomix_charts
+    deploy_replicated_apps
+
+    echo 'Killing deployment container'
+    docker kill $HELM_CONTAINER_NAME > /dev/null 2>&1 || true
+}
+
+setup_deployment_container() {
+    echo 'Creating helm/kubectl container'
     docker kill $HELM_CONTAINER_NAME > /dev/null 2>&1 || true
     docker run -it -d \
       --entrypoint '/bin/sh' \
@@ -47,8 +60,10 @@ run_helm_builder_container() {
     echo 'Copying kubeconfig to container'
     docker exec -i $HELM_CONTAINER_NAME mkdir -p /root/.kube
     docker cp $KUBECONFIG_PATH $HELM_CONTAINER_NAME:/root/.kube/config
+}
 
-    echo 'Deploying helm applications'
+deploy_ingress_controller() {
+    echo 'Creating nginx ingress controller'
     docker exec -i $HELM_CONTAINER_NAME \
       kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
 
@@ -60,18 +75,22 @@ run_helm_builder_container() {
         --for=condition=ready pod \
         --selector=app.kubernetes.io/component=controller \
         --timeout=90s
+}
 
+deploy_atomix_charts() {
+    echo 'Creating atomix infrastructure'
     docker exec -i $HELM_CONTAINER_NAME helm install atomix install/helm-chart --atomic --debug
-    docker exec -i $HELM_CONTAINER_NAME helm install counter-app charts/counter --atomic --debug
+}
 
-    echo 'Killing helm container'
-    docker kill $HELM_CONTAINER_NAME > /dev/null 2>&1 || true
+deploy_replicated_apps() {
+    echo 'Deploying replicated apps: counter app'
+    docker exec -i $HELM_CONTAINER_NAME helm install counter-app charts/counter --atomic --debug
 }
 
 main() {
     install_kind
     create_kind_cluster
-    run_helm_builder_container
+    deploy_infrastructure
 }
 
 main

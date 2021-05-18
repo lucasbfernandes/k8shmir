@@ -1,4 +1,8 @@
 raft-database:
+  fullnameOverride: raft-database
   partitions: 1
   replicas: 3
   partitionsPerCluster: 3
+
+atomix-controller:
+  fullnameOverride: atomix-controller

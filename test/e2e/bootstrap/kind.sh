@@ -6,9 +6,9 @@ set -o pipefail
 
 readonly KIND_VERSION=${KIND_VERSION:-v0.10.0}
 readonly HELM_VERSION=3.5.4
-readonly CLUSTER_NAME=chart-testing
-readonly ROOT=${CI_PROJECT_DIR:-$PWD}
-readonly KUBECONFIG_PATH=$HOME/.kube/$CLUSTER_NAME.kubeconfig
+readonly CLUSTER_NAME=e2e-test
+readonly ROOT=$(dirname "$0")
+readonly KUBECONFIG_PATH=$ROOT/$CLUSTER_NAME.kubeconfig
 readonly HELM_CONTAINER_NAME=helm_builder
 
 install_kind() {
@@ -29,7 +29,7 @@ create_kind_cluster() {
     kind create cluster \
       --name "$CLUSTER_NAME" \
       --kubeconfig $KUBECONFIG_PATH \
-      --config $ROOT/test/e2e/setup/kind-config.yaml
+      --config $ROOT/kind-config.yaml
 }
 
 deploy_infrastructure() {
@@ -45,6 +45,7 @@ deploy_infrastructure() {
     docker kill $HELM_CONTAINER_NAME > /dev/null 2>&1 || true
 }
 
+# TODO improve path management
 setup_deployment_container() {
     echo 'Creating helm/kubectl container'
     docker kill $HELM_CONTAINER_NAME > /dev/null 2>&1 || true
@@ -52,8 +53,8 @@ setup_deployment_container() {
       --entrypoint '/bin/sh' \
       --network host \
       --name $HELM_CONTAINER_NAME \
-      --volume $ROOT/test/e2e/charts:/e2e/charts \
-      --volume $ROOT/install:/e2e/install \
+      --volume $ROOT/charts:/e2e/charts \
+      --volume $ROOT/../../../install:/e2e/install \
       --workdir /e2e \
       dtzar/helm-kubectl:$HELM_VERSION
 

@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: counter-app-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /counter1(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: counter1
+                port:
+                  number: 3000
+          - path: /counter2(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: counter2
+                port:
+                  number: 3000

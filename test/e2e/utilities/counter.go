@@ -11,6 +11,10 @@ const (
 	Counter1URL = "http://localhost/counter1"
 
 	Counter2URL = "http://localhost/counter2"
+
+	CounterIncOP = "INC"
+
+	CounterDecOP = "DEC"
 )
 
 type CounterRequest struct {
@@ -61,4 +65,20 @@ func DoGetCounterRequest(url string) (*CounterResponse, error) {
 	}
 
 	return &counterResponse, nil
+}
+
+func DoResetCounter() error {
+	client := resty.New()
+	response, err := client.R().
+		Post(fmt.Sprintf("%s/integer/reset", Counter1URL))
+
+	if err != nil {
+		return err
+	}
+
+	if response.IsError() {
+		return errors.New(fmt.Sprintf("failed with status code: %d", response.StatusCode()))
+	}
+
+	return nil
 }

@@ -40,7 +40,7 @@ restart_app_container() {
       kubectl wait \
         --for=condition=ready \
         pod/counter2\
-        --timeout=180s
+        --timeout=360s
 
     echo 'Killing kubectl container'
     docker kill $KUBECTL_CONTAINER_NAME > /dev/null 2>&1 || true

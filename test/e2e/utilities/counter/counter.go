@@ -2,7 +2,6 @@ package counter
 
 import (
 	"github.com/go-resty/resty/v2"
-	"os"
 	"os/exec"
 
 	"errors"
@@ -97,9 +96,6 @@ func DoAlternateRequest(index int, url string, incVal int, decVal int) error {
 
 func ExecuteAndWaitScriptFile(scriptPath string) error {
 	execCmd := exec.Command("/bin/sh", scriptPath)
-
-	execCmd.Stderr = os.Stderr
-	execCmd.Stdout = os.Stdout
 
 	err := execCmd.Start()
 	if err != nil {

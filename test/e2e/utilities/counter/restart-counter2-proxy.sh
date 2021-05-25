@@ -28,7 +28,7 @@ setup_deployment_container() {
 }
 
 restart_app_container() {
-    echo 'Restarting app container'
+    echo 'Restarting proxy container'
     docker exec -i $KUBECTL_CONTAINER_NAME \
       kubectl exec counter2 -c k8s-smr -- /bin/sh -c "kill 1"
 
@@ -40,7 +40,7 @@ restart_app_container() {
       kubectl wait \
         --for=condition=ready \
         pod/counter2\
-        --timeout=180s
+        --timeout=360s
 
     echo 'Killing kubectl container'
     docker kill $KUBECTL_CONTAINER_NAME > /dev/null 2>&1 || true

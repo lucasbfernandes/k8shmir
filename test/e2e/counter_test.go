@@ -4,8 +4,14 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	testUtils "k8s-smr/test/e2e/utilities"
+	"k8s-smr/test/e2e/utilities/counter"
 	"testing"
+)
+
+const (
+	restartCounter2AppScriptPath = "utilities/counter/restart-counter2-app.sh"
+
+	restartCounter2ProxyScriptPath = "utilities/counter/restart-counter2-proxy.sh"
 )
 
 type CounterE2ETestSuite struct {
@@ -13,7 +19,7 @@ type CounterE2ETestSuite struct {
 }
 
 func (suite *CounterE2ETestSuite) SetupSuite() {
-	err := testUtils.DoResetCounter()
+	err := counter.DoResetCounter()
 	if err != nil {
 		suite.FailNow(fmt.Sprintf("failed to setup test suite: %s", err))
 	}
@@ -23,23 +29,23 @@ func (suite *CounterE2ETestSuite) TearDownSuite() {
 }
 
 func (suite *CounterE2ETestSuite) TearDownTest() {
-	err := testUtils.DoResetCounter()
+	err := counter.DoResetCounter()
 	if err != nil {
 		suite.FailNow(fmt.Sprintf("failed to tear down test: %s", err))
 	}
 }
 
 func (suite *CounterE2ETestSuite) TestRequestShouldPropagateToReplicasCorrectly() {
-	err := testUtils.DoPostCounterRequest(testUtils.Counter1URL, testUtils.CounterIncOP, 2)
+	err := counter.DoPostCounterRequest(counter.URL1, counter.IncOP, 2)
 	assert.Nil(suite.T(), err, "request error should be nil")
 
-	err = testUtils.DoPostCounterRequest(testUtils.Counter1URL, testUtils.CounterDecOP, 1)
+	err = counter.DoPostCounterRequest(counter.URL1, counter.DecOP, 1)
 	assert.Nil(suite.T(), err, "request error should be nil")
 
-	err = testUtils.DoPostCounterRequest(testUtils.Counter1URL, testUtils.CounterIncOP, 3)
+	err = counter.DoPostCounterRequest(counter.URL1, counter.IncOP, 3)
 	assert.Nil(suite.T(), err, "request error should be nil")
 
-	resp, err := testUtils.DoGetCounterRequest(testUtils.Counter2URL)
+	resp, err := counter.DoGetCounterRequest(counter.URL2)
 	assert.Nil(suite.T(), err, "request error should be nil")
 	assert.Equal(suite.T(), 4, resp.Value, "replicas value should be equal")
 }
@@ -48,25 +54,17 @@ func (suite *CounterE2ETestSuite) TestParallelRequestsShouldConfirmSequentialCon
 	counter1Chan := make(chan struct{})
 	counter2Chan := make(chan struct{})
 
-	doRequestFunc := func(index int, url string, incVal int, decVal int) {
-		if index % 2 == 0 {
-			err := testUtils.DoPostCounterRequest(url, testUtils.CounterIncOP, incVal)
-			assert.Nil(suite.T(), err, "request error should be nil")
-		} else {
-			err := testUtils.DoPostCounterRequest(url, testUtils.CounterDecOP, decVal)
-			assert.Nil(suite.T(), err, "request error should be nil")
-		}
-	}
-
 	go func() {
 		for i := 0; i < 250; i++ {
-			doRequestFunc(i, testUtils.Counter1URL, 3, 2)
+			err := counter.DoAlternateRequest(i, counter.URL1, 3, 2)
+			assert.Nil(suite.T(), err, "request error should be nil")
 		}
 		close(counter1Chan)
 	}()
 	go func() {
 		for i := 0; i < 250; i++ {
-			doRequestFunc(i, testUtils.Counter2URL, 4, 7)
+			err := counter.DoAlternateRequest(i, counter.URL2, 4, 7)
+			assert.Nil(suite.T(), err, "request error should be nil")
 		}
 		close(counter2Chan)
 	}()
@@ -74,10 +72,62 @@ func (suite *CounterE2ETestSuite) TestParallelRequestsShouldConfirmSequentialCon
 	<-counter1Chan
 	<-counter2Chan
 
-	counter1Resp, err := testUtils.DoGetCounterRequest(testUtils.Counter1URL)
+	counter1Resp, err := counter.DoGetCounterRequest(counter.URL1)
 	assert.Nil(suite.T(), err, "request error should be nil")
 
-	counter2Resp, err := testUtils.DoGetCounterRequest(testUtils.Counter2URL)
+	counter2Resp, err := counter.DoGetCounterRequest(counter.URL2)
+	assert.Nil(suite.T(), err, "request error should be nil")
+
+	assert.Equal(suite.T(), counter1Resp.Value, counter2Resp.Value, "replicas value should be equal")
+}
+
+func (suite *CounterE2ETestSuite) TestAppContainerFailureRestartShouldCatchUpStateCorrectlyBeforeReady() {
+	counter1Chan := make(chan struct{}, 1)
+
+	go func() {
+		for i := 0; i < 250; i++ {
+			err := counter.DoAlternateRequest(i, counter.URL1, 7, 11)
+			assert.Nil(suite.T(), err, "request error should be nil")
+		}
+		counter1Chan <- struct{}{}
+	}()
+
+	err := counter.ExecuteAndWaitScriptFile(restartCounter2AppScriptPath)
+	assert.Nil(suite.T(), err, "restart error should be nil")
+
+	<-counter1Chan
+	close(counter1Chan)
+
+	counter1Resp, err := counter.DoGetCounterRequest(counter.URL1)
+	assert.Nil(suite.T(), err, "request error should be nil")
+
+	counter2Resp, err := counter.DoGetCounterRequest(counter.URL2)
+	assert.Nil(suite.T(), err, "request error should be nil")
+
+	assert.Equal(suite.T(), counter1Resp.Value, counter2Resp.Value, "replicas value should be equal")
+}
+
+func (suite *CounterE2ETestSuite) TestProxyContainerFailureRestartShouldCatchUpStateCorrectlyBeforeReady() {
+	counter1Chan := make(chan struct{}, 1)
+
+	go func() {
+		for i := 0; i < 250; i++ {
+			err := counter.DoAlternateRequest(i, counter.URL1, 7, 11)
+			assert.Nil(suite.T(), err, "request error should be nil")
+		}
+		counter1Chan <- struct{}{}
+	}()
+
+	err := counter.ExecuteAndWaitScriptFile(restartCounter2ProxyScriptPath)
+	assert.Nil(suite.T(), err, "restart error should be nil")
+
+	<-counter1Chan
+	close(counter1Chan)
+
+	counter1Resp, err := counter.DoGetCounterRequest(counter.URL1)
+	assert.Nil(suite.T(), err, "request error should be nil")
+
+	counter2Resp, err := counter.DoGetCounterRequest(counter.URL2)
 	assert.Nil(suite.T(), err, "request error should be nil")
 
 	assert.Equal(suite.T(), counter1Resp.Value, counter2Resp.Value, "replicas value should be equal")

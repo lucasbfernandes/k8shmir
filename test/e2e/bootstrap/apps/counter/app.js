@@ -2,6 +2,13 @@ const express = require('express')
 const morgan = require('morgan')
 const bp = require('body-parser')
 
+const process = require('process')
+
+process.on('SIGTERM', () => {
+    console.info("Shutting down...")
+    process.exit(0)
+})
+
 const app = express()
 
 app.use(morgan('combined'))

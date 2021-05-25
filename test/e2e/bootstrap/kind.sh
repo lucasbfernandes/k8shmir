@@ -7,7 +7,7 @@ set -o pipefail
 readonly KIND_VERSION=${KIND_VERSION:-v0.10.0}
 readonly HELM_VERSION=3.5.4
 readonly CLUSTER_NAME=e2e-test
-readonly ROOT=$(dirname "$0")
+readonly ROOT=$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )
 readonly KUBECONFIG_PATH=$ROOT/$CLUSTER_NAME.kubeconfig
 readonly HELM_CONTAINER_NAME=helm_builder
 
@@ -43,6 +43,7 @@ deploy_infrastructure() {
 
     echo 'Killing deployment container'
     docker kill $HELM_CONTAINER_NAME > /dev/null 2>&1 || true
+    docker rm $HELM_CONTAINER_NAME > /dev/null 2>&1 || true
 }
 
 # TODO improve path management
@@ -75,7 +76,7 @@ deploy_ingress_controller() {
       kubectl wait --namespace ingress-nginx \
         --for=condition=ready pod \
         --selector=app.kubernetes.io/component=controller \
-        --timeout=90s
+        --timeout=120s
 }
 
 deploy_atomix_charts() {

@@ -1,20 +1,22 @@
-package e2e_test_utilities
+package counter
 
 import (
 	"github.com/go-resty/resty/v2"
+	"os"
+	"os/exec"
 
 	"errors"
 	"fmt"
 )
 
 const (
-	Counter1URL = "http://localhost/counter1"
+	URL1 = "http://localhost/counter1"
 
-	Counter2URL = "http://localhost/counter2"
+	URL2 = "http://localhost/counter2"
 
-	CounterIncOP = "INC"
+	IncOP = "INC"
 
-	CounterDecOP = "DEC"
+	DecOP = "DEC"
 )
 
 type CounterRequest struct {
@@ -70,7 +72,7 @@ func DoGetCounterRequest(url string) (*CounterResponse, error) {
 func DoResetCounter() error {
 	client := resty.New()
 	response, err := client.R().
-		Post(fmt.Sprintf("%s/integer/reset", Counter1URL))
+		Post(fmt.Sprintf("%s/integer/reset", URL1))
 
 	if err != nil {
 		return err
@@ -78,6 +80,35 @@ func DoResetCounter() error {
 
 	if response.IsError() {
 		return errors.New(fmt.Sprintf("failed with status code: %d", response.StatusCode()))
+	}
+
+	return nil
+}
+
+func DoAlternateRequest(index int, url string, incVal int, decVal int) error {
+	if index % 2 == 0 {
+		err := DoPostCounterRequest(url, IncOP, incVal)
+		return err
+	} else {
+		err := DoPostCounterRequest(url, DecOP, decVal)
+		return err
+	}
+}
+
+func ExecuteAndWaitScriptFile(scriptPath string) error {
+	execCmd := exec.Command("/bin/sh", scriptPath)
+
+	execCmd.Stderr = os.Stderr
+	execCmd.Stdout = os.Stdout
+
+	err := execCmd.Start()
+	if err != nil {
+		return err
+	}
+
+	err = execCmd.Wait()
+	if err != nil {
+		return err
 	}
 
 	return nil

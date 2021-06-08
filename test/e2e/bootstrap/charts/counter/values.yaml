@@ -8,7 +8,7 @@ proxy:
 
 proxySetup:
   name: proxy-setup
-  image: lucasbfernandes/proxy-setup:test7
+  image: lucasbfernandes/proxy-setup:iptables1
 
 counterApp:
   name: nodejs-app

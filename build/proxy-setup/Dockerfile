@@ -1,5 +1,5 @@
 # Use the latest Ubuntu image for the base.
-FROM ubuntu:latest
+FROM ubuntu:18.04
 
 # Install the iptables command.
 RUN apt-get update && \

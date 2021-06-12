@@ -3,13 +3,19 @@ package server
 import (
 	"bytes"
 	"fmt"
+	"github.com/atomix/go-client/pkg/client/log"
 	"k8s-smr/internal/config"
 	"k8s-smr/internal/models"
 	"net/http"
+	"strconv"
 )
 
-func (s *Server) forwardRequest(request *models.Request) (*http.Response, error) {
-	proxyRequest, err := s.createHTTPRequestFromModel(request)
+const (
+	logIndexHeader = "log-index"
+)
+
+func (s *Server) forwardRequest(request *models.Request, logEntry *log.Entry) (*http.Response, error) {
+	proxyRequest, err := s.createHTTPRequestFromModel(request, logEntry)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +29,7 @@ func (s *Server) forwardRequest(request *models.Request) (*http.Response, error)
 	return res, nil
 }
 
-func (s *Server) createHTTPRequestFromModel(request *models.Request) (*http.Request, error) {
+func (s *Server) createHTTPRequestFromModel(request *models.Request, logEntry *log.Entry) (*http.Request, error) {
 	applicationPort := config.GetApplicationPort()
 
 	// We are always forwarding to 127.0.0.1 because both proxy and application reside on the same pod
@@ -34,6 +40,7 @@ func (s *Server) createHTTPRequestFromModel(request *models.Request) (*http.Requ
 		return nil, err
 	}
 	proxyRequest.Header = request.Headers
+	proxyRequest.Header.Set(logIndexHeader, strconv.FormatUint(uint64(logEntry.Index), 10))
 
 	return proxyRequest, nil
 }

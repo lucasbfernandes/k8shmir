@@ -16,12 +16,18 @@ app.use(bp.json())
 app.use(bp.urlencoded({ extended: true }))
 app.use((req, res, next) => {
     console.log(req.body)
+    console.log(req.headers)
     next()
 })
 
 const port = 3000
 
 let integer = 0
+let lastIndex = -1
+
+app.get('/last-index', (req, res) => {
+    res.status(200).send({ index: lastIndex })
+})
 
 app.get('/integer', (req, res) => {
     res.status(200).send({ value: integer })
@@ -40,6 +46,8 @@ app.post('/integer', (req, res) => {
             res.status(500).send({ error: 'Invalid operation' });
             break
     }
+
+    lastIndex = parseInt(req.headers['log-index'])
     res.status(201).send()
 })
 

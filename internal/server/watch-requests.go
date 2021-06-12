@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func (s *Server) WatchRequests() error {
+func (s *Server) watchRequests() error {
 	watchChan, err := s.db.GetRequestsWatchChannel()
 	if err != nil {
 		return err
@@ -31,7 +31,7 @@ func (s *Server) processObservedRequests(watchChan chan *atomixLog.Event) {
 
 		// TODO improve error handling - might add inconsistency
 		if _, requestExists := s.incomingRequestsMap[request.Id]; !requestExists {
-			_, err = s.forwardRequest(request)
+			_, err = s.forwardRequest(request, event.Entry)
 			if err != nil {
 				log.Printf("failed to forward request: %s\n", err)
 				continue

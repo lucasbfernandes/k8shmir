@@ -1,23 +1,19 @@
 package server
 
 import (
+	"github.com/atomix/go-client/pkg/client/log"
 	"io/ioutil"
 	"k8s-smr/internal/models"
 	"net/http"
 )
 
-func (s *Server) persistRequest(httpRequest *http.Request, requestId string) (*models.Request, error) {
-	request, err := s.buildRequestObject(httpRequest, requestId)
+func (s *Server) persistRequest(request *models.Request) (*log.Entry, error) {
+	entry, err := s.db.AppendRequest(request)
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.db.AppendRequest(request)
-	if err != nil {
-		return nil, err
-	}
-
-	return request, nil
+	return entry, nil
 }
 
 func (s *Server) buildRequestObject(nativeRequest *http.Request, requestId string) (*models.Request, error) {

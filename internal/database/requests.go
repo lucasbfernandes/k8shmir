@@ -8,24 +8,24 @@ import (
 	"k8s-smr/internal/models"
 )
 
-func (db *RaftDatabase) AppendRequest(request *models.Request) error {
+func (db *RaftDatabase) AppendRequest(request *models.Request) (*log.Entry, error) {
 	logPrimitiveName := config.GetAtomixLogPrimitiveName()
 
 	logPrimitive, err := db.client.GetLog(context.TODO(), logPrimitiveName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	serializedRequest, err := db.requestToByteArray(request)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = logPrimitive.Append(context.TODO(), serializedRequest)
+	entry, err := logPrimitive.Append(context.TODO(), serializedRequest)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return entry, nil
 }
 
 func (db *RaftDatabase) GetRequestsWatchChannel() (chan *log.Event, error) {

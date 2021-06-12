@@ -15,6 +15,8 @@ type Server struct {
 	db *database.RaftDatabase
 
 	incomingRequestsMap map[string]bool
+
+	isSynced bool
 }
 
 // TODO use context instead of a request map?
@@ -31,9 +33,16 @@ func New(port string) (*Server, error) {
 	}, nil
 }
 
-// TODO add support for TLS
+// TODO add support for TLS?
 func (s *Server) Start() error {
-	err := s.WatchRequests()
+	err := s.watchRequests()
+	if err != nil {
+		return err
+	}
+
+	s.isSynced = false
+
+	err = s.startHeartbeat()
 	if err != nil {
 		return err
 	}
@@ -51,7 +60,14 @@ func (s *Server) ServeHTTP(responseWriter http.ResponseWriter, httpRequest *http
 	requestId := uuid.New().String()
 	s.incomingRequestsMap[requestId] = true
 
-	request, err := s.persistRequest(httpRequest, requestId)
+	request, err := s.buildRequestObject(httpRequest, requestId)
+	if err != nil {
+		log.Printf("failed to create request object: %s\n", err)
+		http.Error(responseWriter, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	logEntry, err := s.persistRequest(request)
 	if err != nil {
 		log.Printf("failed to persist request: %s\n", err)
 		http.Error(responseWriter, err.Error(), http.StatusBadRequest)
@@ -59,7 +75,7 @@ func (s *Server) ServeHTTP(responseWriter http.ResponseWriter, httpRequest *http
 	}
 
 	// TODO improve error handling - might add inconsistency
-	res, err := s.forwardRequest(request)
+	res, err := s.forwardRequest(request, logEntry)
 	if err != nil {
 		log.Printf("failed to forward request: %s\n", err)
 		http.Error(responseWriter, err.Error(), http.StatusBadGateway)

@@ -5,6 +5,8 @@ import "os"
 const (
 	defaultProxyPort = "8080"
 
+	defaultHealthProxyPort = "8081"
+
 	defaultAppPort = "3000"
 
 	defaultAtomixDBName = "raft-database"
@@ -20,6 +22,14 @@ func GetProxyServerPort() string {
 		return port
 	}
 	return defaultProxyPort
+}
+
+func GetHealthProxyServerPort() string {
+	port, envExists := os.LookupEnv("PROXY_HEALTH_PORT")
+	if envExists && port != "" {
+		return port
+	}
+	return defaultHealthProxyPort
 }
 
 func GetApplicationPort() string {

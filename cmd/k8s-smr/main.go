@@ -9,8 +9,9 @@ import (
 
 func main() {
 	port := config.GetProxyServerPort()
+	healthPort := config.GetHealthProxyServerPort()
 
-	proxyServer, err := server.New(port)
+	proxyServer, err := server.New(port, healthPort)
 	if err != nil {
 		log.Printf("failed to create server: %s\n", err.Error())
 		os.Exit(1)

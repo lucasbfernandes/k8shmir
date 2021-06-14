@@ -12,6 +12,8 @@ import (
 type Server struct {
 	port string
 
+	healthPort string
+
 	db *database.RaftDatabase
 
 	incomingRequestsMap map[string]bool
@@ -20,7 +22,7 @@ type Server struct {
 }
 
 // TODO use context instead of a request map?
-func New(port string) (*Server, error) {
+func New(port string, healthPort string) (*Server, error) {
 	raftDatabase, err := database.New()
 	if err != nil {
 		return nil, err
@@ -28,6 +30,7 @@ func New(port string) (*Server, error) {
 
 	return &Server{
 		port: port,
+		healthPort: healthPort,
 		db: raftDatabase,
 		incomingRequestsMap: make(map[string]bool),
 	}, nil
@@ -46,6 +49,8 @@ func (s *Server) Start() error {
 	if err != nil {
 		return err
 	}
+
+	go s.startHealthCheckServer()
 
 	err = http.ListenAndServe(fmt.Sprintf(":%s", s.port), s)
 	if err != nil {

@@ -45,6 +45,38 @@ func (db *RaftDatabase) GetRequestsWatchChannel() (chan *log.Event, error) {
 	return requestsChan, nil
 }
 
+func (db *RaftDatabase) GetLastIndex() (*log.Index, error) {
+	logPrimitiveName := config.GetAtomixLogPrimitiveName()
+
+	logPrimitive, err := db.client.GetLog(context.TODO(), logPrimitiveName)
+	if err != nil {
+		return nil, err
+	}
+
+	lastIndex, err := logPrimitive.LastIndex(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+
+	return &lastIndex, nil
+}
+
+func (db *RaftDatabase) GetByIndex(logIndex log.Index) (*log.Entry, error) {
+	logPrimitiveName := config.GetAtomixLogPrimitiveName()
+
+	logPrimitive, err := db.client.GetLog(context.TODO(), logPrimitiveName)
+	if err != nil {
+		return nil, err
+	}
+
+	entry, err := logPrimitive.Get(context.TODO(), logIndex)
+	if err != nil {
+		return nil, err
+	}
+
+	return entry, nil
+}
+
 func (db *RaftDatabase) requestToByteArray(request *models.Request) ([]byte, error) {
 	serializedRequest, err := json.Marshal(request)
 	if err != nil {
@@ -52,3 +84,4 @@ func (db *RaftDatabase) requestToByteArray(request *models.Request) ([]byte, err
 	}
 	return serializedRequest, nil
 }
+

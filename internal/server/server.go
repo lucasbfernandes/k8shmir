@@ -2,9 +2,11 @@ package server
 
 import (
 	"fmt"
+	atomixLog "github.com/atomix/go-client/pkg/client/log"
 	"github.com/google/uuid"
 	"io"
 	"k8s-smr/internal/database"
+	"k8s-smr/internal/models"
 	"log"
 	"net/http"
 )
@@ -18,7 +20,15 @@ type Server struct {
 
 	incomingRequestsMap map[string]bool
 
+	watchQueue []WatchQueueEntry
+
 	isSynced bool
+}
+
+type WatchQueueEntry struct {
+	request *models.Request
+
+	logEntry *atomixLog.Entry
 }
 
 // TODO use context instead of a request map?
@@ -33,6 +43,7 @@ func New(port string, healthPort string) (*Server, error) {
 		healthPort: healthPort,
 		db: raftDatabase,
 		incomingRequestsMap: make(map[string]bool),
+		watchQueue: make([]*models.Request, 0),
 	}, nil
 }
 

@@ -31,6 +31,11 @@ func (s *Server) processObservedRequests(watchChan chan *atomixLog.Event) {
 
 		// TODO improve error handling - might add inconsistency
 		if _, requestExists := s.incomingRequestsMap[request.Id]; !requestExists {
+			if !s.isSynced {
+				s.watchQueue = append(s.watchQueue, WatchQueueEntry{request, event.Entry})
+				continue
+			}
+
 			_, err = s.forwardRequest(request, event.Entry)
 			if err != nil {
 				log.Printf("failed to forward request: %s\n", err)

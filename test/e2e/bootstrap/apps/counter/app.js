@@ -23,17 +23,19 @@ app.use((req, res, next) => {
 const port = 3000
 
 let integer = 0
-let lastIndex = -1
+let lastIndex = 0
 
 app.get('/last-index', (req, res) => {
     res.status(200).send({ index: lastIndex })
 })
 
 app.get('/integer', (req, res) => {
+    lastIndex = parseInt(req.headers['log-index'])
     res.status(200).send({ value: integer })
 })
 
 app.post('/integer', (req, res) => {
+    lastIndex = parseInt(req.headers['log-index'])
     const { op, value } = req.body
     switch (op) {
         case 'INC':
@@ -47,11 +49,11 @@ app.post('/integer', (req, res) => {
             break
     }
 
-    lastIndex = parseInt(req.headers['log-index'])
     res.status(201).send()
 })
 
 app.post('/integer/reset', (req, res) => {
+    lastIndex = parseInt(req.headers['log-index'])
     integer = 0
     res.status(200).send()
 })

@@ -33,3 +33,9 @@ spec:
           value: {{ .Values.proxy.atomixLogPrimitiveName | quote }}
         - name: APPLICATION_PORT
           value: {{ .Values.counterApp.port | quote }}
+      readinessProbe:
+        httpGet:
+          path: /healthcheck
+          port: 8081
+        initialDelaySeconds: 2
+        periodSeconds: 1

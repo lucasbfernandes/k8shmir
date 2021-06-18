@@ -14,7 +14,7 @@ const (
 	// TODO use environment variable
 	getLastIndexPath = "/last-index"
 
-	every5SecondsExpression = "@every 0h0m2s"
+	every5SecondsExpression = "@every 0h0m1s"
 )
 
 type LastIndexResponse struct {
@@ -41,6 +41,11 @@ func (s *Server) doHeartbeat() {
 	if err != nil {
 		log.Printf("failed to get last applied index: %v\n", err)
 		s.isSynced = false
+		return
+	}
+
+	if s.isSynced {
+		log.Printf("already synced - returning")
 		return
 	}
 
@@ -89,6 +94,10 @@ func (s *Server) syncData(response *LastIndexResponse) error {
 		return err
 	}
 
+	log.Printf("current indexes:\n")
+	log.Printf("last applied index: %v\n", lastAppliedIndex)
+	log.Printf("last atomix index: %v\n", uint64(*lastAtomixIndex))
+
 	err = s.applyRequestsDiff(lastAppliedIndex, uint64(*lastAtomixIndex))
 	if err != nil {
 		return err
@@ -114,6 +123,7 @@ func (s *Server) applyRequestsDiff(lastAppliedIndex uint64, lastAtomixIndex uint
 			return err
 		}
 
+		log.Printf("request diff - forwarding index %v\n", uint64(entry.Index))
 		_, err = s.forwardRequest(request, entry)
 		if err != nil {
 			return err
@@ -128,7 +138,8 @@ func (s *Server) clearWatchQueue(lastAtomixIndex uint64) error {
 		entry := s.watchQueue[0].logEntry
 		queueIndex := uint64(entry.Index)
 
-		if queueIndex >= lastAtomixIndex {
+		if queueIndex > lastAtomixIndex {
+			log.Printf("clear watch queue - forwarding index %v\n", queueIndex)
 			_, err := s.forwardRequest(request, entry)
 			if err != nil {
 				return err

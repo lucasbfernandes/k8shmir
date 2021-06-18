@@ -43,7 +43,7 @@ func New(port string, healthPort string) (*Server, error) {
 		healthPort: healthPort,
 		db: raftDatabase,
 		incomingRequestsMap: make(map[string]bool),
-		watchQueue: make([]*models.Request, 0),
+		watchQueue: make([]WatchQueueEntry, 0),
 	}, nil
 }
 
@@ -94,6 +94,7 @@ func (s *Server) ServeHTTP(responseWriter http.ResponseWriter, httpRequest *http
 	res, err := s.forwardRequest(request, logEntry)
 	if err != nil {
 		log.Printf("failed to forward request: %s\n", err)
+		s.isSynced = false
 		http.Error(responseWriter, err.Error(), http.StatusBadGateway)
 		return
 	}

@@ -1,7 +1,7 @@
 proxy:
   name: k8s-smr
   port: 8080
-  image: lucasbfernandes/k8s-smr:heartbeat8
+  image: lucasbfernandes/k8s-smr:heartbeat16
   atomixDbName: raft-database
   atomixControllerAddress: atomix-controller.default.svc.cluster.local:5679
   atomixLogPrimitiveName: request-logs
@@ -13,4 +13,4 @@ proxySetup:
 counterApp:
   name: nodejs-app
   port: 3000
-  image: lucasbfernandes/nodejs-app:v0.6.0
+  image: lucasbfernandes/nodejs-app:v0.8.0

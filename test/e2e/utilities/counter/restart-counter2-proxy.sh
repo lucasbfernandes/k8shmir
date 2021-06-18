@@ -50,6 +50,7 @@ restart_app_container() {
 main() {
     setup_deployment_container
     restart_app_container
+    sleep 5
 }
 
 main

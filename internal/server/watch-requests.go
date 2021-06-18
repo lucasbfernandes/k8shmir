@@ -38,7 +38,8 @@ func (s *Server) processObservedRequests(watchChan chan *atomixLog.Event) {
 
 			_, err = s.forwardRequest(request, event.Entry)
 			if err != nil {
-				log.Printf("failed to forward request: %s\n", err)
+				log.Printf("watch - failed to forward request: %s\n", err)
+				s.isSynced = false
 				continue
 			}
 		}

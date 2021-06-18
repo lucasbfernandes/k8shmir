@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"k8s-smr/test/e2e/utilities/counter"
+	"log"
 	"testing"
 )
 
@@ -123,6 +124,82 @@ func (suite *CounterE2ETestSuite) TestProxyContainerFailureRestartShouldCatchUpS
 
 	<-counter1Chan
 	close(counter1Chan)
+
+	counter1Resp, err := counter.DoGetCounterRequest(counter.URL1)
+	assert.Nil(suite.T(), err, "request error should be nil")
+
+	counter2Resp, err := counter.DoGetCounterRequest(counter.URL2)
+	assert.Nil(suite.T(), err, "request error should be nil")
+
+	assert.Equal(suite.T(), counter1Resp.Value, counter2Resp.Value, "replicas value should be equal")
+}
+
+func (suite *CounterE2ETestSuite) TestAppContainerFailureShouldCatchUpStateCorrectlyWhenBothPodsReceiveRequests() {
+	counter1Chan := make(chan struct{}, 1)
+	counter2Chan := make(chan struct{}, 1)
+
+	go func() {
+		for i := 0; i < 250; i++ {
+			err := counter.DoAlternateRequest(i, counter.URL1, 7, 11)
+			assert.Nil(suite.T(), err, "request error should be nil")
+		}
+		counter1Chan <- struct{}{}
+	}()
+
+	go func() {
+		for i := 0; i < 250; i++ {
+			err := counter.DoAlternateRequest(i, counter.URL2, 13, 3)
+			log.Printf("error: %v\n", err)
+		}
+		counter2Chan <- struct{}{}
+	}()
+
+	err := counter.ExecuteAndWaitScriptFile(restartCounter2AppScriptPath)
+	assert.Nil(suite.T(), err, "restart error should be nil")
+
+	<-counter1Chan
+	close(counter1Chan)
+
+	<-counter2Chan
+	close(counter2Chan)
+
+	counter1Resp, err := counter.DoGetCounterRequest(counter.URL1)
+	assert.Nil(suite.T(), err, "request error should be nil")
+
+	counter2Resp, err := counter.DoGetCounterRequest(counter.URL2)
+	assert.Nil(suite.T(), err, "request error should be nil")
+
+	assert.Equal(suite.T(), counter1Resp.Value, counter2Resp.Value, "replicas value should be equal")
+}
+
+func (suite *CounterE2ETestSuite) TestProxyContainerFailureShouldCatchUpStateCorrectlyWhenBothPodsReceiveRequests() {
+	counter1Chan := make(chan struct{}, 1)
+	counter2Chan := make(chan struct{}, 1)
+
+	go func() {
+		for i := 0; i < 250; i++ {
+			err := counter.DoAlternateRequest(i, counter.URL1, 7, 11)
+			assert.Nil(suite.T(), err, "request error should be nil")
+		}
+		counter1Chan <- struct{}{}
+	}()
+
+	go func() {
+		for i := 0; i < 250; i++ {
+			err := counter.DoAlternateRequest(i, counter.URL2, 13, 3)
+			log.Printf("error: %v\n", err)
+		}
+		counter2Chan <- struct{}{}
+	}()
+
+	err := counter.ExecuteAndWaitScriptFile(restartCounter2ProxyScriptPath)
+	assert.Nil(suite.T(), err, "restart error should be nil")
+
+	<-counter1Chan
+	close(counter1Chan)
+
+	<-counter2Chan
+	close(counter2Chan)
 
 	counter1Resp, err := counter.DoGetCounterRequest(counter.URL1)
 	assert.Nil(suite.T(), err, "request error should be nil")

@@ -18,7 +18,7 @@ type Server struct {
 
 	db *database.RaftDatabase
 
-	incomingRequestsMap map[string]bool
+	incomingRequestsMap map[string]chan struct{}
 
 	watchQueue []WatchQueueEntry
 
@@ -42,7 +42,7 @@ func New(port string, healthPort string) (*Server, error) {
 		port: port,
 		healthPort: healthPort,
 		db: raftDatabase,
-		incomingRequestsMap: make(map[string]bool),
+		incomingRequestsMap: make(map[string]chan struct{}),
 		watchQueue: make([]WatchQueueEntry, 0),
 	}, nil
 }
@@ -71,10 +71,12 @@ func (s *Server) Start() error {
 	return nil
 }
 
+// TODO serialize request execution - what if we have concurrency problems?
+// TODO example: raft delivers messages 3 and 4 for two different threads but thread 4 delivers its message first
 // TODO create dto and return it instead of model?
 func (s *Server) ServeHTTP(responseWriter http.ResponseWriter, httpRequest *http.Request) {
 	requestId := uuid.New().String()
-	s.incomingRequestsMap[requestId] = true
+	s.incomingRequestsMap[requestId] = make(chan struct{})
 
 	request, err := s.buildRequestObject(httpRequest, requestId)
 	if err != nil {
@@ -83,12 +85,18 @@ func (s *Server) ServeHTTP(responseWriter http.ResponseWriter, httpRequest *http
 		return
 	}
 
+	// Persist Atomix
 	logEntry, err := s.persistRequest(request)
 	if err != nil {
 		log.Printf("failed to persist request: %s\n", err)
 		http.Error(responseWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	// Blocking until atomix emits message (ensuring Total Order)
+	log.Printf("Waiting for request %s\n", requestId)
+	<-s.incomingRequestsMap[requestId]
+	log.Printf("Forwarding original request %s\n", requestId)
 
 	// TODO improve error handling - might add inconsistency
 	res, err := s.forwardRequest(request, logEntry)

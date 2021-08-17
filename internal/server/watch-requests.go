@@ -30,7 +30,8 @@ func (s *Server) processObservedRequests(watchChan chan *atomixLog.Event) {
 		}
 
 		// TODO improve error handling - might add inconsistency
-		if _, requestExists := s.incomingRequestsMap[request.Id]; !requestExists {
+		_, requestExists := s.incomingRequestsMap[request.Id]
+		if !requestExists {
 			if !s.isSynced {
 				s.watchQueue = append(s.watchQueue, WatchQueueEntry{request, event.Entry})
 				continue
@@ -42,6 +43,9 @@ func (s *Server) processObservedRequests(watchChan chan *atomixLog.Event) {
 				s.isSynced = false
 				continue
 			}
+		} else {
+			// This is unblocking the original request
+			close(s.incomingRequestsMap[request.Id])
 		}
 	}
 }

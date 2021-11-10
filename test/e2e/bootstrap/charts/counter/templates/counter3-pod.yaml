@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: counter3
+  labels:
+    app: counter3
+spec:
+  containers:
+    - name: {{ .Values.counterApp.name }}
+      image: {{ .Values.counterApp.image }}
+      ports:
+        - containerPort: {{ .Values.counterApp.port }}

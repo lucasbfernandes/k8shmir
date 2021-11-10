@@ -22,3 +22,10 @@ spec:
                 name: counter2
                 port:
                   number: 3000
+          - path: /counter3(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: counter3
+                port:
+                  number: 3000

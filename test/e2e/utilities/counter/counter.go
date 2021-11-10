@@ -13,6 +13,8 @@ const (
 
 	URL2 = "http://localhost/counter2"
 
+	URL3 = "http://localhost/counter3"
+
 	IncOP = "INC"
 
 	DecOP = "DEC"

@@ -1,22 +1,30 @@
 import requests
+import numpy as np
 
 NUMBER_OF_COMMANDS = 10000
+SERVICE_URL = "http://localhost/counter/integer"
 
-def fire_and_calculate_mean(url):
+def fire_and_get_response_times(url):
     response_times = []
     for i in range(NUMBER_OF_COMMANDS):
         response = requests.get(url)
-        response_times.append(response.elapsed.total_seconds())
-
-    milliseconds_mean = (sum(response_times) / len(response_times)) * 1000
-    print(milliseconds_mean)
+        response_times.append(response.elapsed.total_seconds() * 1000)
+    return response_times
 
 def main():
-    print('Counter1 and Counter2 respectively (Both replicas with K8ShMiR):')
-    fire_and_calculate_mean("http://localhost/counter1/integer")
-    fire_and_calculate_mean("http://localhost/counter2/integer")
+    response_times = fire_and_get_response_times(SERVICE_URL)
+    response_array = np.array(response_times)
 
-    print('Counter3 (App without K8ShMiR):')
-    fire_and_calculate_mean("http://localhost/counter3/integer")
+    mean = np.mean(response_array)
+    std = np.std(response_array)
+    percentile_90 = np.percentile(response_array, 90)
+    percentile_95 = np.percentile(response_array, 95)
+    percentile_99 = np.percentile(response_array, 99)
+
+    print("Mean: ", mean)
+    print("Standard deviation: ", std)
+    print("90th percentile: ", percentile_90)
+    print("95th percentile: ", percentile_95)
+    print("99th percentile: ", percentile_99)
 
 main()

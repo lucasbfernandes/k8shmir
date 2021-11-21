@@ -84,9 +84,10 @@ deploy_atomix_charts() {
     docker exec -i $HELM_CONTAINER_NAME helm install atomix install/helm-chart --atomic --debug
 }
 
+# Change this method to deploy other apps
 deploy_replicated_apps() {
-    echo 'Deploying replicated apps: counter app'
-    docker exec -i $HELM_CONTAINER_NAME helm install counter-app charts/counter --atomic --debug
+    echo 'Deploying replicated apps'
+    docker exec -i $HELM_CONTAINER_NAME helm install stress-app charts/stress --atomic --debug
 }
 
 main() {

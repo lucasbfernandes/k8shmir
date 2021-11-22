@@ -1,0 +1,41 @@
+name: nodejs-app-release
+
+on:
+  push:
+    branches: [ release-* ]
+
+jobs:
+  build_and_push_prerelease:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Actions cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | awk -F 'release-'  '{print $2}')
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v1.0.1
+        with:
+          path: .
+          username: ${{secrets.DOCKER_REGISTRY_USERNAME}}
+          password: ${{secrets.DOCKER_REGISTRY_PASSWORD}}
+          repository: lucasbfernandes/nodejs-app
+          dockerfile: ./build/nodejs-app/Dockerfile
+          tags: ${{steps.get_version.outputs.VERSION}}
+          tag_with_ref: false
+          tag_with_sha: false

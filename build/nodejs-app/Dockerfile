@@ -4,7 +4,7 @@ ENV APP_PATH /opt/nodejs-app
 
 RUN mkdir -p $APP_PATH
 WORKDIR $APP_PATH
-COPY . $APP_PATH
+COPY build/nodejs-app $APP_PATH
 
 RUN npm install
 

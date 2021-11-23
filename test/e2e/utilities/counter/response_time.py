@@ -16,22 +16,24 @@ def fire_and_get_response_times(url):
 
 def main():
     for i in range(TEST_REPETITIONS):
-        print("Executing test instance number: ", i + 1)
+#         print("Executing test instance number: ", i + 1)
 
         response_times = fire_and_get_response_times(SERVICE_URL)
         response_array = np.array(response_times)
 
-        mean = np.mean(response_array)
-        std = np.std(response_array)
-        percentile_90 = np.percentile(response_array, 90)
-        percentile_95 = np.percentile(response_array, 95)
-        percentile_99 = np.percentile(response_array, 99)
+        mean = str(np.mean(response_array)).replace(".", ",")
+        std = str(np.std(response_array)).replace(".", ",")
+        percentile_90 = str(np.percentile(response_array, 90)).replace(".", ",")
+        percentile_95 = str(np.percentile(response_array, 95)).replace(".", ",")
+        percentile_99 = str(np.percentile(response_array, 99)).replace(".", ",")
 
-        print("Mean: ", str(mean).replace(".", ","))
-        print("Standard deviation: ", str(std).replace(".", ","))
-        print("90th percentile: ", str(percentile_90).replace(".", ","))
-        print("95th percentile: ", str(percentile_95).replace(".", ","))
-        print("99th percentile: ", str(percentile_99).replace(".", ","))
-        print("")
+        print(f'{mean};{std};{percentile_90};{percentile_95};{percentile_99})
+
+#         print("Mean: ", str(mean).replace(".", ","))
+#         print("Standard deviation: ", str(std).replace(".", ","))
+#         print("90th percentile: ", str(percentile_90).replace(".", ","))
+#         print("95th percentile: ", str(percentile_95).replace(".", ","))
+#         print("99th percentile: ", str(percentile_99).replace(".", ","))
+#         print("")
 
 main()

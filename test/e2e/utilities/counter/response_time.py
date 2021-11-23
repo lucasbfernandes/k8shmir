@@ -27,7 +27,7 @@ def main():
         percentile_95 = str(np.percentile(response_array, 95)).replace(".", ",")
         percentile_99 = str(np.percentile(response_array, 99)).replace(".", ",")
 
-        print(f'{mean};{std};{percentile_90};{percentile_95};{percentile_99})
+        print(f'{mean};{std};{percentile_90};{percentile_95};{percentile_99}')
 
 #         print("Mean: ", str(mean).replace(".", ","))
 #         print("Standard deviation: ", str(std).replace(".", ","))
